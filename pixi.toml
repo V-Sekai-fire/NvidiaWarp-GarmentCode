@@ -1,0 +1,17 @@
+[workspace]
+name = "warp-build"
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[dependencies]
+python = "3.11.*"
+numpy = "*"
+pip = "*"
+igl = "*"
+scipy = "*"
+cuda-nvcc = "12.6.*"
+cuda-cudart-dev = "12.6.*"
+cuda-cudart-static = "12.6.*"
+cuda-nvrtc-dev = "12.6.*"
+cuda-nvrtc-static = "12.6.*"
+libcublas-dev = "12.6.*"

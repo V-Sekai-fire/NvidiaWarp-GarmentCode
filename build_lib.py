@@ -111,6 +111,13 @@ if os.name == "nt":
         warp.config.host_compiler = find_host_compiler()
 
         if not warp.config.host_compiler:
+            # Fallback: cl.exe already on PATH (e.g. portable MSVC devcmd.bat
+            # was sourced by the caller, so INCLUDE/LIB/PATH are already set).
+            import shutil
+
+            warp.config.host_compiler = shutil.which("cl.exe") or shutil.which("cl")
+
+        if not warp.config.host_compiler:
             print("Warp build error: Could not find MSVC compiler")
             sys.exit(1)
 

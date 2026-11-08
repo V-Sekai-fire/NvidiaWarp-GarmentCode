@@ -48,8 +48,10 @@ typedef CUresult (CUDAAPI *PFN_cuGraphicsGLRegisterBuffer_v3000)(CUgraphicsResou
 // these are explicitly versioned according to cudaTypedefs.h from CUDA Toolkit WP_CUDA_TOOLKIT_VERSION
 #if CUDA_VERSION < 12000
 static PFN_cuGetProcAddress_v11030 pfn_cuGetProcAddress;
+#define PFN_cuGetProcAddress PFN_cuGetProcAddress_v11030
 #else
 static PFN_cuGetProcAddress_v12000 pfn_cuGetProcAddress;
+#define PFN_cuGetProcAddress PFN_cuGetProcAddress_v12000
 #endif
 static PFN_cuDriverGetVersion_v2020 pfn_cuDriverGetVersion;
 static PFN_cuGetErrorName_v6000 pfn_cuGetErrorName;

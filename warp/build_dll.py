@@ -183,19 +183,31 @@ def build_dll_for_arch(dll_path, cpp_paths, cu_path, libs, mode, arch, verify_fp
 
         if quick:
             # minimum supported architectures (PTX)
-            gencode_opts += ["-gencode=arch=compute_52,code=compute_52", "-gencode=arch=compute_75,code=compute_75"]
+            if ctk_version >= (13, 0):
+                # CUDA 13 dropped Maxwell/Pascal/Volta (sm_52/60/61/70) support
+                gencode_opts += ["-gencode=arch=compute_75,code=compute_75"]
+            else:
+                gencode_opts += ["-gencode=arch=compute_52,code=compute_52", "-gencode=arch=compute_75,code=compute_75"]
         else:
             # generate code for all supported architectures
-            gencode_opts += [
-                # SASS for supported desktop/datacenter architectures
-                "-gencode=arch=compute_52,code=sm_52",  # Maxwell
-                "-gencode=arch=compute_60,code=sm_60",  # Pascal
-                "-gencode=arch=compute_61,code=sm_61",
-                "-gencode=arch=compute_70,code=sm_70",  # Volta
-                "-gencode=arch=compute_75,code=sm_75",  # Turing
-                "-gencode=arch=compute_80,code=sm_80",  # Ampere
-                "-gencode=arch=compute_86,code=sm_86",
-            ]
+            if ctk_version >= (13, 0):
+                # CUDA 13 toolkit dropped nvcc support for sm_52/60/61/70
+                gencode_opts += [
+                    "-gencode=arch=compute_75,code=sm_75",  # Turing
+                    "-gencode=arch=compute_80,code=sm_80",  # Ampere
+                    "-gencode=arch=compute_86,code=sm_86",
+                ]
+            else:
+                gencode_opts += [
+                    # SASS for supported desktop/datacenter architectures
+                    "-gencode=arch=compute_52,code=sm_52",  # Maxwell
+                    "-gencode=arch=compute_60,code=sm_60",  # Pascal
+                    "-gencode=arch=compute_61,code=sm_61",
+                    "-gencode=arch=compute_70,code=sm_70",  # Volta
+                    "-gencode=arch=compute_75,code=sm_75",  # Turing
+                    "-gencode=arch=compute_80,code=sm_80",  # Ampere
+                    "-gencode=arch=compute_86,code=sm_86",
+                ]
             if arch == "aarch64" and sys.platform == "linux":
                 gencode_opts += [
                     # SASS for supported mobile architectures (e.g. Tegra/Jetson)
@@ -223,6 +235,17 @@ def build_dll_for_arch(dll_path, cpp_paths, cu_path, libs, mode, arch, verify_fp
             "-t0",  # multithreaded compilation
             "--extended-lambda",
         ]
+
+        if os.name == "nt":
+            # CUDA 13's CCCL headers require the standard-conforming MSVC
+            # preprocessor (CUDA Toolkit still defaults cl.exe to the
+            # traditional one).
+            nvcc_opts.append("--compiler-options=/Zc:preprocessor")
+
+        if ctk_version >= (13, 0):
+            # CUDA 13's CCCL/CUB headers require C++17; the toolkit no
+            # longer defaults nvcc's host dialect high enough on its own.
+            nvcc_opts.append("-std=c++17")
 
         if fast_math:
             nvcc_opts.append("--use_fast_math")

@@ -79,7 +79,7 @@ def find_host_compiler():
             if not os.path.exists(vswhere_path):
                 return ""
 
-            vs_path = run_cmd(f'"{vswhere_path}" -latest -property installationPath').decode().rstrip()
+            vs_path = run_cmd(f'"{vswhere_path}" -latest -products * -property installationPath').decode().rstrip()
             vsvars_path = os.path.join(vs_path, "VC\\Auxiliary\\Build\\vcvars64.bat")
 
             output = run_cmd(f'"{vsvars_path}" && set').decode()
